@@ -9,7 +9,7 @@ git clone "https://${GIT_SECRETB}@github.com/ZyCromerZ/gdrive_uploader" gdrive_u
 chmod +x ./gdrive_uploader/run.sh
 
 ./build -a arm64 -s gnu -v 10 -p gz
-./gdrive_uploader/run.sh "$(pwd)/${PACKAGE}" "keqing-drive" "ALL-COMPILED-GCC"
+./gdrive_uploader/run.sh "$(pwd)/aarch64-linux-gnu-10.x-gnu-$(date +%Y%m%d).tar.gz" "keqing-drive" "ALL-COMPILED-GCC"
 
 # ./build -a arm -s gnu -v 10 -p gz
 # ./gdrive_uploader/run.sh "$(pwd)/${PACKAGE}" "keqing-drive" "ALL-COMPILED-GCC"
