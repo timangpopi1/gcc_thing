@@ -587,7 +587,8 @@ function build_binutils() {
                           --target=${TARGET} \
                           --prefix="${INSTALL}" \
                           --disable-gdb \
-                          --enable-gold
+                          --enable-gold \
+                          --enable-plugins
     make "${JOBS}" || die "Error while building binutils!" -n
     make install "${JOBS}" || die "Error while installing binutils!" -n
 }
