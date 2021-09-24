@@ -189,8 +189,6 @@ function setup_variables() {
 
     # Start of script
     START=$(date +%s)
-    
-    GCC_HEAD_COMMIT=""
 }
 
 
@@ -420,8 +418,6 @@ function download_sources() {
         if [[ ! -d gcc ]]; then
             header "DOWNLOADING GCC"
             git_clone https://git.linaro.org/toolchain/gcc.git -b ${GCC}
-            GCC_HEAD_COMMIT="$(cd ${GCC} && git rev-parse HEAD)"
-            cd sources
         fi
     else
         if [[ ! -f binutils-${BINUTILS_tar}.tar.xz ]]; then

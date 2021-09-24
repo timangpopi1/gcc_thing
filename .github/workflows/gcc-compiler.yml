@@ -1,4 +1,4 @@
-name: Compile TWRP
+name: Building new GCC
 
 on: [push]
 
@@ -13,6 +13,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Compile GCC
+      env:
+        GIT_SECRET: ${{ secrets.GIT_SECRET }}
+        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
       run: |
         chmod +x do-now.sh
-        ./do-now.sh
+        #bash do-now.sh "aarch64-zyc-linux-gnu" "12" "arm64" "nozip"
