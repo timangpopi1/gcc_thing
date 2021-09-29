@@ -20,6 +20,11 @@ if [[ -z "${1}" ]] || [[ -z "${2}" ]] || [[ -z "${3}" ]];then
     exit -1;
 fi
 
+if [[ -z "${GIT_SECRET}" ]] || [[ -z "${BOT_TOKEN}" ]];then
+    echo "something is missing, fix it first"
+    exit -1;
+fi
+
 ./build -a "${3}" -s gnu -v ${GCCVersion} -p gz
 FILE="$(pwd)/$GCCType-${GCCVersion}.x-gnu-$(date +%Y%m%d).tar.gz"
 # cd gdrive_uploader
