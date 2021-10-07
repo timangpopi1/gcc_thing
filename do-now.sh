@@ -25,7 +25,8 @@ if [[ -z "${GIT_SECRET}" ]] || [[ -z "${BOT_TOKEN}" ]];then
     echo "something is missing, fix it first"
     exit -1;
 fi
-
+export GIT_SSL_NO_VERIFY=1
+git config --global http.sslverify false
 ./build -a "${3}" -s gnu -v ${GCCVersion} -p gz -V
 # FILE="$(pwd)/$GCCType-${GCCVersion}.x-gnu-$(date +%Y%m%d).tar.gz"
 # cd gdrive_uploader
