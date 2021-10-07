@@ -5,6 +5,7 @@
 #
 # Copyright (C) 2021 ZyCromerZ
 #
+echo "cmds : ${@}"
 dpkg --add-architecture i386
 apt-get update -y
 apt-get -y install flex bison ncurses-dev texinfo gcc gperf patch libtool automake g++ libncurses5-dev gawk expat libexpat1-dev python-all-dev binutils-dev libgcc1:i386 bc libgnutls28-dev libcap-dev autoconf autoconf-archive libgmp-dev build-essential gcc-multilib g++-multilib pkg-config libmpc-dev libmpfr-dev autopoint gettext liblzma-dev libssl-dev libz-dev
