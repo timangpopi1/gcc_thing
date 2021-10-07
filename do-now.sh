@@ -26,7 +26,7 @@ if [[ -z "${GIT_SECRET}" ]] || [[ -z "${BOT_TOKEN}" ]];then
     exit -1;
 fi
 
-./build -a "${3}" -s gnu -v ${GCCVersion} -p gz
+./build -a "${3}" -s gnu -v ${GCCVersion} -p gz -V
 # FILE="$(pwd)/$GCCType-${GCCVersion}.x-gnu-$(date +%Y%m%d).tar.gz"
 # cd gdrive_uploader
 
