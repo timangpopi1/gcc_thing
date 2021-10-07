@@ -152,13 +152,21 @@ function unmount_tmpfs() {
 
 # git clone wrapper
 function git_clone() {
-    git clone ${DEPTH_FLAG:+"--depth=1"} "${@}"
+    if [[ "${DEPTH_FLAG}" == "true" ]];then
+        git clone --depth=1 ${@}
+    else
+        git clone ${@}
+    fi
 }
 
 
 # git fetch wrapper
 function git_fetch() {
-    git fetch ${DEPTH_FLAG:+"--depth=1"} "${@}"
+    if [[ "${DEPTH_FLAG}" == "true" ]];then
+        git fetch --depth=1 ${@}
+    else
+        git fetch ${@}
+    fi
 }
 
 
