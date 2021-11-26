@@ -1,0 +1,43 @@
+name: Building new GCC 12
+
+on:
+  push:
+    branches:
+      - gcc/*
+  schedule:
+    - cron: '35 1 * * *'
+
+jobs:
+  arm:
+
+    runs-on: ubuntu-latest
+  
+    container: 
+      image: zycromerz/kerneldocker:v2
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Compile GCC
+      env:
+        GIT_SECRET: ${{ secrets.GIT_SECRET }}
+        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+      run: |
+        chmod +x do-now.sh
+        bash do-now.sh "arm-zyc-linux-gnueabi" "12" "arm" "nozip"
+
+  arm64:
+
+    runs-on: ubuntu-latest
+  
+    container: 
+      image: zycromerz/kerneldocker:v2
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Compile GCC
+      env:
+        GIT_SECRET: ${{ secrets.GIT_SECRET }}
+        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+      run: |
+        chmod +x do-now.sh
+        bash do-now.sh "aarch64-zyc-linux-gnu" "12" "arm64" "nozip"
