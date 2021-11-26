@@ -3,7 +3,7 @@ name: Building new GCC 12
 on:
   push:
     branches:
-      - gcc/*
+      - gcc/main
   schedule:
     - cron: '35 1 * * *'
 
