@@ -1,6 +1,8 @@
 name: Building new GCC aarch64-zyc-linux-gnu
 
-on: [push]
+on:
+  schedule:
+    - cron: '35 1 * * SUN'
 
 jobs:
   build:
