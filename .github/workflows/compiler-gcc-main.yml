@@ -5,7 +5,7 @@ on:
     branches:
       - gcc/main
   schedule:
-    - cron: '35 1 * * *'
+    - cron: '35 0 * * *'
 
 jobs:
   arm:
