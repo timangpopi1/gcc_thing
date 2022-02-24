@@ -16,6 +16,7 @@ CURRENTMAINPATH="$(pwd)"
 rm -rf .git
 GCCType="${1}"
 GCCVersion="${2}"
+
 if [[ -z "${1}" ]] || [[ -z "${2}" ]] || [[ -z "${3}" ]];then
     echo "something is missing, fix it first"
     exit
