@@ -187,14 +187,14 @@ function setup_variables() {
     DEPTH_FLAG=true
 
     # Binary versions
-    BINUTILS_git="binutils-2_37-branch"
-    BINUTILS_tar="2.37"
+    BINUTILS_git="binutils-2_38-branch"
+    BINUTILS_tar="2.38"
     GMP="gmp-6.2.1"
     MPFR="mpfr-4.1.0"
     MPC="mpc-1.2.1"
     ISL="isl-0.24"
-    GLIBC="glibc-2.34"
-    LINUX="5.4.121"
+    GLIBC="glibc-2.35"
+    LINUX="5.4.181"
 
     # Start of script
     START=$(date +%s)
