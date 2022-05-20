@@ -18,7 +18,7 @@
 # http://www.mpfr.org/
 # https://gmplib.org/
 # http://www.multiprecision.org/
-# http://isl.gforge.inria.fr/
+# https://sources.easybuild.io/i/ISL/
 # https://www.gnu.org/software/binutils/
 # https://www.gnu.org/software/libc/
 # https://www.kernel.org/
@@ -437,9 +437,9 @@ function download_sources() {
             axel https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_tar}.tar.xz
         fi
 
-        if [[ ! -f ${ISL}.tar.xz ]]; then
+        if [[ ! -f ${ISL}.tar.bz2 ]]; then
             header "DOWNLOADING ISL ${ISL} FOR GCC ${VERSION}"
-            axel http://isl.gforge.inria.fr/${ISL}.tar.xz
+            axel https://sources.easybuild.io/i/ISL/${ISL}.tar.bz2
         fi
 
         # GNU, any version
@@ -470,12 +470,17 @@ function download_sources() {
 
 
 function extract() {
+    UNPACK=""
     case "${1}" in
         *.gz) UNPACK=pigz ;;
         *.xz) UNPACK=pxz ;;
     esac
     mkdir -p "${2}"
-    ${UNPACK} -d < "${1}" | tar -xC "${2}" --strip-components=1
+    if [[ ! -Z "${UNPACK} "]];then
+        ${UNPACK} -d < "${1}" | tar -xC "${2}" --strip-components=1
+    else
+        tar -x "${1}" -C "${2}" --strip-components=1
+    fi
 }
 
 
@@ -489,7 +494,7 @@ function extract_sources() {
     extract linux-${LINUX}.tar.xz ../linux
     if [[ -n ${TARBALLS} ]]; then
         extract binutils-${BINUTILS_tar}.tar.xz ../binutils
-        extract ${ISL}.tar.xz ../${ISL}
+        extract ${ISL}.tar.bz2 ../${ISL}
         if [[ ${SOURCE} = "linaro" && ${VERSION} -ge 8 ]]; then
             # We can't use extract function here as this ships other GNU tools
             # Only extract GCC source and later rename it to gcc
