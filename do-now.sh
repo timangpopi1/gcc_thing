@@ -85,6 +85,7 @@ if [[ -d ${GCCType} ]];then
     fi 
 
     git clone https://${GIT_SECRET}@github.com/ZyCromerZ/${GCCType} -b $GCCVersion $(pwd)/FromGithub && \
+    rm -fr $(pwd)/FromGithub/*
     cp -af ${GCCType}/* $(pwd)/FromGithub && cd $(pwd)/FromGithub && \
     git add . && git commit -s -m "Update to https://github.com/gcc-mirror/gcc/commit/${GCC_HEAD_COMMIT}
 
