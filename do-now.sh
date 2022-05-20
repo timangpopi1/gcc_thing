@@ -83,7 +83,12 @@ if [[ -d ${GCCType} ]];then
         cd $CURRENTMAINPATH
     fi 
 
-    git clone https://${GIT_SECRET}@github.com/ZyCromerZ/${GCCType} -b $GCCVersion $(pwd)/FromGithub && \
+    git clone https://${GIT_SECRET}@github.com/ZyCromerZ/${GCCType} -b $GCCVersion $(pwd)/FromGithub || \
+    mkdir $(pwd)/FromGithub && \
+    cd $(pwd)/FromGithub && \
+    git init && \
+    git remote add origin https://${GIT_SECRET}@github.com/ZyCromerZ/${GCCType} && \
+    git checkout -b $GCCVersion && cd $CURRENTMAINPATH
     rm -fr $(pwd)/FromGithub/*
     cp -af ${GCCType}/* $(pwd)/FromGithub && cd $(pwd)/FromGithub && \
     git add . && git commit -s -m "Update to https://github.com/gcc-mirror/gcc/commit/${GCC_HEAD_COMMIT}
