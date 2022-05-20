@@ -476,7 +476,7 @@ function extract() {
         *.xz) UNPACK=pxz ;;
     esac
     mkdir -p "${2}"
-    if [[ ! -Z "${UNPACK} "]];then
+    if [[ ! -z "${UNPACK}" ]];then
         ${UNPACK} -d < "${1}" | tar -xC "${2}" --strip-components=1
     else
         tar -x "${1}" -C "${2}" --strip-components=1
