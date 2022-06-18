@@ -83,24 +83,27 @@ if [[ -d ${GCCType} ]];then
         GCC_HEAD_COMMIT="$(git rev-parse HEAD)"
         cd $CURRENTMAINPATH
     fi 
-
-    git clone https://${GIT_SECRET}@github.com/ZyCromerZ/${GCCType} -b $GCCVersion $(pwd)/FromGithub || \
-    mkdir $(pwd)/FromGithub && \
-    cd $(pwd)/FromGithub && \
-    git init && \
-    git remote add origin https://${GIT_SECRET}@github.com/ZyCromerZ/${GCCType} && \
-    git checkout -b $GCCVersion && cd $CURRENTMAINPATH
+    Fail="n"
+    git clone https://${GIT_SECRET}@github.com/ZyCromerZ/${GCCType} -b $GCCVersion $(pwd)/FromGithub || Fail="y"
+    if [[ "$Fail" == "y" ]];then
+        mkdir $(pwd)/FromGithub
+        cd $(pwd)/FromGithub
+        git init
+        git remote add origin https://${GIT_SECRET}@github.com/ZyCromerZ/${GCCType}
+        git checkout -b $GCCVersion && cd $CURRENTMAINPATH
+        cd $CURRENTMAINPATH
+    fi
     rm -fr $(pwd)/FromGithub/*
-    cp -af ${GCCType}/* $(pwd)/FromGithub && cd $(pwd)/FromGithub && \
+    cp -af ${GCCType}/* $(pwd)/FromGithub && cd $(pwd)/FromGithub
     git add . && git commit -s -m "Update to https://github.com/gcc-mirror/gcc/commit/${GCC_HEAD_COMMIT}
 
     GCC VERSION: $( ../${GCCType}/bin/${GCCType}-gcc --version | head -n 1)
-    GCC COMMIT URL: https://github.com/gcc-mirror/gcc/commit/${GCC_HEAD_COMMIT}" && \
+    GCC COMMIT URL: https://github.com/gcc-mirror/gcc/commit/${GCC_HEAD_COMMIT}"
     git push --all origin -f
     cd $CURRENTMAINPATH
 
     if [[ ! -z "${4}" ]] && [[ "${4}" == "nozip" ]];then
-        if [[ -d "${GCCType}" ]] && [[ -e "${GCCType}/bin/${GCCType}-gcc" ]];then
+        if [[ -d "${GCCType}" ]] && [[ -e "${GCCType}/bin/${GCCType}-gcc" ]] && [[ "$Fail" == "n" ]];then
             GCCVer="$(./${GCCType}/bin/${GCCType}-gcc --version | head -n 1)"
             GCCLink="https://github.com/ZyCromerZ/compiled-gcc/releases/download/v$GCCType-${GCCVersion}.x-gnu-$(date +%Y%m%d)/$GCCType-${GCCVersion}.x-gnu-$(date +%Y%m%d).tar.gz"
             curl -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendMessage" -d chat_id="-1001628919239" \
