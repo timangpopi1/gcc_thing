@@ -189,7 +189,7 @@ function setup_variables() {
     DEPTH_FLAG=true
 
     # Binary versions
-    BINUTILS_git="binutils-2_38-branch"
+    BINUTILS_git="master"
     BINUTILS_tar="2.38"
     GMP="gmp-6.2.1"
     MPFR="mpfr-4.1.0"
@@ -241,7 +241,7 @@ function parse_parameters() {
         *) die "Absent or invalid arch specified!" -h ;;
     esac
 
-    case "${arch}" in
+    case "${ARCH}" in
     "arm") ARCH_CLANG="ARM" ;;
     "arm64") ARCH_CLANG="AArch64" ;;
     "x86_64") ARCH_CLANG="x86-64" ;;
@@ -704,10 +704,10 @@ function install_gcc() {
 
 # Make readme.md about GCC
 function add_readme() {
+    binutils_ver="$(cat ${ROOT}/sources/binutils/bfd/configure | awk -F "PACKAGE_VERSION=" '{print $2}' | sed -r 's/'"'"'//g')"
     echo "# Quick Info ${TARGET}"> "${TARGET}/readme.md"
-    echo "* Compiled with :" >> "${TARGET}/readme.md"
-    echo "  * BINUTILS version: ${BINUTILS_tar}" >> "${TARGET}/readme.md"
-    echo "${BINUTILS_tar}" >> "${TARGET}/../.BINUTILS.versionNya"
+    echo "  * BINUTILS version: ${binutils_ver}" >> "${TARGET}/readme.md"
+    echo "${binutils_ver}" >> "${TARGET}/../.BINUTILS.versionNya"
     echo "  * GMP version: ${GMP}" >> "${TARGET}/readme.md"
     echo "${GMP}" >> "${TARGET}/../.GMP.versionNya"
     echo "  * MPFR version: ${MPFR}" >> "${TARGET}/readme.md"
