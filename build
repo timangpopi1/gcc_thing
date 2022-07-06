@@ -252,7 +252,7 @@ function parse_parameters() {
     "10") LLVM_BRANCH="release/12.x" ;;
     "11") LLVM_BRANCH="release/13.x" ;;
     "12") LLVM_BRANCH="release/14.x" ;;
-    "13") LLVM_BRANCH="main" ;;
+    "13") LLVM_BRANCH="release/14.x" ;;
     esac
 
     case "${ARCH}" in
