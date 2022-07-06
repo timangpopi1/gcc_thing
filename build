@@ -82,6 +82,7 @@ function die() {
     echo "${RED}${1}${RST}"
     [[ "${*}" =~ "-n" ]] && echo
     [[ "${*}" =~ "-h" ]] && help_menu
+    echo "error" > ${ROOT}/fail.info
     exit
 }
 
@@ -179,22 +180,23 @@ function setup_variables() {
     YLW="\033[01;33m"
 
     # Configuration variables
-    CONFIGURATION=( "--disable-multilib" "--disable-werror" "--with-pkgversion=ZyC-GCC" 
+    CONFIGURATION=( "--disable-multilib" "--disable-werror" "--with-pkgversion=ZyC-GCC"
                     "CFLAGS=-g0 -O3 -pipe -fstack-protector-strong -fuse-linker-plugin -ffunction-sections -fdata-sections"
                     "CXXFLAGS=-g0 -O3 -pipe -fstack-protector-strong -fuse-linker-plugin -ffunction-sections -fdata-sections"
                     "LDFLAGS=-O3")
-    JOBS="-j$(($(nproc --all) + 1))"
+
+    JOBS="-j$(($(nproc --all) + 2))"
     DEPTH_FLAG=true
 
     # Binary versions
-    BINUTILS_git="binutils-2_38-branch"
+    BINUTILS_git="master"
     BINUTILS_tar="2.38"
     GMP="gmp-6.2.1"
     MPFR="mpfr-4.1.0"
     MPC="mpc-1.2.1"
     ISL="isl-0.24"
     GLIBC="glibc-2.35"
-    LINUX="5.4.195"
+    LINUX="5.4.203"
 
     # Start of script
     START=$(date +%s)
@@ -237,6 +239,26 @@ function parse_parameters() {
         "x86_64") [[ ${VERSION} -le 5 ]] && die "Will not build, Use newer version instead" -n
                   TARGET="x86_64-zyc-linux-gnu" ;;
         *) die "Absent or invalid arch specified!" -h ;;
+    esac
+
+    case "${ARCH}" in
+    "arm") ARCH_CLANG="ARM" ;;
+    "arm64") ARCH_CLANG="AArch64" ;;
+    "x86_64") ARCH_CLANG="x86-64" ;;
+    esac
+
+    LLVM_BRANCH="release/11.x"
+    case "${VERSION}" in
+    "10") LLVM_BRANCH="release/12.x" ;;
+    "11") LLVM_BRANCH="release/13.x" ;;
+    "12") LLVM_BRANCH="release/14.x" ;;
+    "13") LLVM_BRANCH="release/14.x" ;;
+    esac
+
+    case "${ARCH}" in
+        "arm") TARGETCLG="arm-linux-gnueabi" ;;
+        "arm64") TARGETCLG="aarch64-linux-gnu" ;;
+        "x86_64") TARGETCLG="x86_64-linux-gnu" ;;
     esac
 
     # Kernel architecture; i686 and x86_64 targets use x86
@@ -630,7 +652,8 @@ function build_gcc() {
     ../gcc/configure "${CONFIGURATION[@]}" \
                      --enable-languages=c,c++ \
                      --target=${TARGET} \
-                     --prefix="${INSTALL}"
+                     --prefix="${INSTALL}" \
+                     --with-linker-hash-style=both
     make all-gcc "${JOBS}" || die "Error while building gcc!" -n
     make install-gcc "${JOBS}" || die "Error while installing gcc!" -n
     if [[ ${ARCH} = "x86_64" ]]; then
@@ -681,10 +704,10 @@ function install_gcc() {
 
 # Make readme.md about GCC
 function add_readme() {
+    binutils_ver="$(cat ${ROOT}/sources/binutils/bfd/configure | awk -F "PACKAGE_VERSION=" '{print $2}' | sed -r 's/'"'"'//g' | tr -d "\n" )"
     echo "# Quick Info ${TARGET}"> "${TARGET}/readme.md"
-    echo "* Compiled with :" >> "${TARGET}/readme.md"
-    echo "  * BINUTILS version: ${BINUTILS_tar}" >> "${TARGET}/readme.md"
-    echo "${BINUTILS_tar}" >> "${TARGET}/../.BINUTILS.versionNya"
+    echo "  * BINUTILS version: ${binutils_ver}" >> "${TARGET}/readme.md"
+    echo "${binutils_ver}" >> "${TARGET}/../.BINUTILS.versionNya"
     echo "  * GMP version: ${GMP}" >> "${TARGET}/readme.md"
     echo "${GMP}" >> "${TARGET}/../.GMP.versionNya"
     echo "  * MPFR version: ${MPFR}" >> "${TARGET}/readme.md"
@@ -743,6 +766,97 @@ function ending_info() {
     echo "\a"
 }
 
+function build_lld() {
+    # from https://github.com/mvaisakh/gcc-build/blob/next/build-lld.sh
+    header "Build LLD"
+    (
+        cd ${ROOT}
+        git clone https://github.com/llvm/llvm-project -b ${LLVM_BRANCH} llvm --depth=1
+        export PATH="${INSTALL}/bin:${PATH}"
+        mkdir -p llvm/build
+        cd llvm/build
+        cmake -G "Ninja" \
+            -DLLVM_ENABLE_PROJECTS=lld \
+            -DCMAKE_CROSSCOMPILING=True \
+            -DCMAKE_INSTALL_PREFIX="${INSTALL}" \
+            -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGETCLG}" \
+            -DLLVM_TARGET_ARCH="${ARCH_CLANG}" \
+            -DLLVM_TARGETS_TO_BUILD="${ARCH_CLANG}" \
+            -DCMAKE_CXX_COMPILER="$(which clang++)" \
+            -DCMAKE_C_COMPILER=$(which clang) \
+            -DLLVM_OPTIMIZED_TABLEGEN=True \
+            -DLLVM_USE_LINKER=lld \
+            -DLLVM_ENABLE_LTO=thin \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLLVM_BUILD_RUNTIME=Off \
+            -DLLVM_INCLUDE_TESTS=Off \
+            -DLLVM_INCLUDE_EXAMPLES=Off \
+            -DLLVM_INCLUDE_BENCHMARKS=Off \
+            -DLLVM_ENABLE_MODULES=Off \
+            -DLLVM_ENABLE_BACKTRACES=Off \
+            -DLLVM_PARALLEL_COMPILE_JOBS=8 \
+            -DLLVM_PARALLEL_LINK_JOBS=4 \
+            -DBUILD_SHARED_LIBS=Off \
+            -DLLVM_INSTALL_TOOLCHAIN_ONLY=On \
+            -DCMAKE_C_FLAGS="-O3" \
+            -DCMAKE_CXX_FLAGS="-O3" \
+            -DLLVM_ENABLE_PIC=False \
+            ../llvm
+        ninja
+        ninja install || die "build llvm failed" -n
+        # Create proper symlinks
+        cd ${INSTALL}/bin
+        ln -s lld ${TARGET}-ld.lld
+    )
+}
+
+function ForStripping()
+{
+    (
+        cd ${ROOT}
+        A64S=aarch64-linux-gnu-strip
+        A32S=arm-linux-gnueabi-strip
+
+        for LetsGetFile in strip ${A64S} ${A32S}
+        do
+            axel "https://github.com/ZyCromerZ/Clang/raw/for-strip/${LetsGetFile}" || axel "https://github.com/kdrag0n/proton-clang/raw/master/bin/${LetsGetFile}"
+            [[ -e ${ROOT}/${LetsGetFile} ]] && chmod +x "${ROOT}/${LetsGetFile}"
+        done
+
+        X86_STRIP="${ROOT}/strip"
+        A64_STRIP="${ROOT}/${A64S}"
+        A32_STRIP="${ROOT}/${A32S}"
+
+        if [[ -e "${X86_STRIP}" ]] && [[ -e "${A64_STRIP}" ]] && [[ -e "${A32_STRIP}" ]];then
+            header "Strip GCC"
+            find "${INSTALL}" -type f -exec file {} \; \
+                | grep "x86" \
+                | grep "not strip" \
+                | grep -v "relocatable" \
+                    | tr ':' ' ' | awk '{print $1}' | while read file; do
+                        echo "${X86_STRIP} ${file}" && ${X86_STRIP} ${file}
+            done
+
+            find "${INSTALL}" -type f -exec file {} \; \
+                | grep "ARM" \
+                | grep "aarch64" \
+                | grep "not strip" \
+                | grep -v "relocatable" \
+                    | tr ':' ' ' | awk '{print $1}' | while read file; do echo "${A64_STRIP} ${file}" && ${A64_STRIP} ${file}
+            done
+
+            find "${INSTALL}" -type f -exec file {} \; \
+                | grep "ARM" \
+                | grep "32.bit" \
+                | grep "not strip" \
+                | grep -v "relocatable" \
+                    | tr ':' ' ' | awk '{print $1}' | while read file; do echo "${A32_STRIP} ${file}" && ${A32_STRIP} ${file}
+            done
+        fi
+
+        rm -rf "${X86_STRIP}" "${A64_STRIP}" "${A32_STRIP}"
+    )
+}
 
 setup_variables
 parse_parameters "${@}"
@@ -759,6 +873,8 @@ build_headers
 build_gcc
 build_glibc
 install_gcc
+build_lld
+ForStripping
 add_readme
 package_tc
 ending_info
