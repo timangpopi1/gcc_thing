@@ -704,7 +704,7 @@ function install_gcc() {
 
 # Make readme.md about GCC
 function add_readme() {
-    binutils_ver="$(cat ${ROOT}/sources/binutils/bfd/configure | awk -F "PACKAGE_VERSION=" '{print $2}' | sed -r 's/'"'"'//g')"
+    binutils_ver="$(cat ${ROOT}/sources/binutils/bfd/configure | awk -F "PACKAGE_VERSION=" '{print $2}' | sed -r 's/'"'"'//g' | tr -d "\n" )"
     echo "# Quick Info ${TARGET}"> "${TARGET}/readme.md"
     echo "  * BINUTILS version: ${binutils_ver}" >> "${TARGET}/readme.md"
     echo "${binutils_ver}" >> "${TARGET}/../.BINUTILS.versionNya"
@@ -805,7 +805,7 @@ function build_lld() {
         ninja
         ninja install || die "build llvm failed" -n
         # Create proper symlinks
-        cd ${{INSTALL}}/bin
+        cd ${INSTALL}/bin
         ln -s lld ${TARGET}-ld.lld
     )
 }
@@ -817,14 +817,18 @@ function ForStripping()
         A64S=aarch64-linux-gnu-strip
         A32S=arm-linux-gnueabi-strip
 
-        curl -LSsO "https://github.com/ZyCromerZ/Clang/raw/for-strip/strip" || curl -LSsO "https://github.com/kdrag0n/proton-clang/raw/master/bin/strip"
-        curl -LSsO "https://github.com/ZyCromerZ/Clang/raw/for-strip/$A64S" || curl -LSsO "https://github.com/kdrag0n/proton-clang/raw/master/bin/$A64S"
-        curl -LSsO "https://github.com/ZyCromerZ/Clang/raw/for-strip/$A32S" || curl -LSsO "https://github.com/kdrag0n/proton-clang/raw/master/bin/$A32S"
-        chmod +x "${ROOT}/strip" && X86_STRIP="${ROOT}/strip"
-        chmod +x "${ROOT}/$A64S" && A64_STRIP="${ROOT}/$A64S"
-        chmod +x "${ROOT}/$A32S" && A32_STRIP="${ROOT}/$A32S"
+        for LetsGetFile in strip ${A64S} ${A32S}
+        do
+            axel "https://github.com/ZyCromerZ/Clang/raw/for-strip/${LetsGetFile}" || axel "https://github.com/kdrag0n/proton-clang/raw/master/bin/${LetsGetFile}"
+            [[ -e ${ROOT}/${LetsGetFile} ]] && chmod +x "${ROOT}/${LetsGetFile}"
+        done
+
+        X86_STRIP="${ROOT}/strip"
+        A64_STRIP="${ROOT}/${A64S}"
+        A32_STRIP="${ROOT}/${A32S}"
 
         if [[ -e "${X86_STRIP}" ]] && [[ -e "${A64_STRIP}" ]] && [[ -e "${A32_STRIP}" ]];then
+            header "Strip GCC"
             for f in $(find "${ROOT}/${TARGET}" -type f -exec file {} \;); do
                 i=$(echo $f | awk '{print $1}'); i=${i: : -1}
                 if [ -n "$(echo $f | grep 'ARM' | grep 'aarch64' | grep 'not strip' | grep -v 'relocatable' )" ]; then
