@@ -829,18 +829,28 @@ function ForStripping()
 
         if [[ -e "${X86_STRIP}" ]] && [[ -e "${A64_STRIP}" ]] && [[ -e "${A32_STRIP}" ]];then
             header "Strip GCC"
-            for f in $(find "${ROOT}/${TARGET}" -type f -exec file {} \;); do
-                i=$(echo $f | awk '{print $1}'); i=${i: : -1}
-                if [ -n "$(echo $f | grep 'ARM' | grep 'aarch64' | grep 'not strip' | grep -v 'relocatable' )" ]; then
-                    ${A64_STRIP} "${i}"
-                    echo ${A64_STRIP} "${i}"
-                elif [ -n "$(echo $f | grep 'ARM' | grep '32.bit' | grep 'not strip' | grep -v 'relocatable' )" ]; then
-                    ${A32_STRIP} "${i}"
-                    echo ${A32_STRIP} "${i}"
-                elif [ -n "$(echo $f | grep 'x86' | grep 'not strip' | grep -v 'relocatable' )" ]; then
-                    ${X86_STRIP} "${i}"
-                    echo ${X86_STRIP} "${i}"
-                fi
+            find "${INSTALL}" -type f -exec file {} \; \
+                | grep "x86" \
+                | grep "not strip" \
+                | grep -v "relocatable" \
+                    | tr ':' ' ' | awk '{print $1}' | while read file; do
+                        echo "${X86_STRIP} ${file}" && ${X86_STRIP} ${file}
+            done
+
+            find "${INSTALL}" -type f -exec file {} \; \
+                | grep "ARM" \
+                | grep "aarch64" \
+                | grep "not strip" \
+                | grep -v "relocatable" \
+                    | tr ':' ' ' | awk '{print $1}' | while read file; do echo "${A64_STRIP} ${file}" && ${A64_STRIP} ${file}
+            done
+
+            find "${INSTALL}" -type f -exec file {} \; \
+                | grep "ARM" \
+                | grep "32.bit" \
+                | grep "not strip" \
+                | grep -v "relocatable" \
+                    | tr ':' ' ' | awk '{print $1}' | while read file; do echo "${A32_STRIP} ${file}" && ${A32_STRIP} ${file}
             done
         fi
 
