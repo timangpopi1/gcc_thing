@@ -41,6 +41,7 @@ jobs:
       run: |
         chmod +x do-now.sh
         bash do-now.sh "aarch64-zyc-linux-gnu" "13" "arm64" "nozip"
+
   eleveb-arm:
 
     runs-on: ubuntu-latest
@@ -74,3 +75,37 @@ jobs:
       run: |
         chmod +x do-now.sh
         bash do-now.sh "aarch64-zyc-linux-gnu" "12" "arm64" "nozip"
+
+  elevea-arm:
+
+    runs-on: ubuntu-latest
+  
+    container: 
+      image: zycromerz/kerneldocker:v3
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Compile GCC
+      env:
+        GIT_SECRET: ${{ secrets.GIT_SECRET }}
+        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+      run: |
+        chmod +x do-now.sh
+        bash do-now.sh "arm-zyc-linux-gnueabi" "11" "arm" "nozip"
+
+  elevea-arm64:
+
+    runs-on: ubuntu-latest
+  
+    container: 
+      image: zycromerz/kerneldocker:v3
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Compile GCC
+      env:
+        GIT_SECRET: ${{ secrets.GIT_SECRET }}
+        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+      run: |
+        chmod +x do-now.sh
+        bash do-now.sh "aarch64-zyc-linux-gnu" "11" "arm64" "nozip"
