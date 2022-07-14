@@ -770,6 +770,11 @@ function build_lld() {
     # from https://github.com/mvaisakh/gcc-build/blob/next/build-lld.sh
     header "Build LLD"
     (
+        if [[ "${ARCH_CLANG}" == "AArch64" ]];then
+            ARCH_CLANGB="${ARCH_CLANG};ARM"
+        else
+            ARCH_CLANGB="${ARCH_CLANG}"
+        fi
         cd ${ROOT}
         git clone https://github.com/llvm/llvm-project -b ${LLVM_BRANCH} llvm --depth=1
         export PATH="${INSTALL}/bin:${PATH}"
@@ -781,7 +786,7 @@ function build_lld() {
             -DCMAKE_INSTALL_PREFIX="${INSTALL}" \
             -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGETCLG}" \
             -DLLVM_TARGET_ARCH="${ARCH_CLANG}" \
-            -DLLVM_TARGETS_TO_BUILD="${ARCH_CLANG}" \
+            -DLLVM_TARGETS_TO_BUILD="${ARCH_CLANGB}" \
             -DCMAKE_CXX_COMPILER="$(which clang++)" \
             -DCMAKE_C_COMPILER=$(which clang) \
             -DLLVM_OPTIMIZED_TABLEGEN=True \
