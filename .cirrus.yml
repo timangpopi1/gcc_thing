@@ -1,0 +1,14 @@
+env:
+    GH_TOKEN: ENCRYPTED[dea494901da12dbfbef9f8b882bb95ac8059c6f2992965c1e2d5a6c1d0cdfc04736a98768ff6a4d157e308896f77ac6b]
+
+task:
+  name: GCC Toolchain
+  timeout_in: 120m
+  container:
+      image: zycromerz/kerneldocker:v3
+      cpu: 8
+      memory: 32G
+
+  Deploy-builder_script:
+      - chmod +x do-now.sh
+      - bash do-now.sh "aarch64-linux-gnu" "13" "arm64"
