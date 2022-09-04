@@ -12,7 +12,7 @@ GCCType="${1}"
 GCCVersion="${2}"
 GCCTarget="${3}"
 
-./build -a "${GCCTarget}" \
+bash build -a "${GCCTarget}" \
         -s gnu \
         -v ${GCCVersion} \
         -p gz -V
