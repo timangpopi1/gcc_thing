@@ -26,7 +26,8 @@ if [[ ! -e $CURRENTMAINPATH/fail.info ]] && [[ -d ${GCCType} ]];then
         echo "Can't define what the repo is!"
         exit 1
     fi
-    git clone https://${GH_TOKEN}@github.com/greenforce-project/${gcc_repo} -b main --depth=1
+    git clone https://${GH_TOKEN}@github.com/greenforce-project/${gcc_repo} -b main
+    cd ${gcc_repo} && git reset --hard c74c2b1a048d842337ff503a3cd4c057a880188f && cd ..
     rm -fr $(pwd)/${gcc_repo}/*
     cp -af ${GCCType}/* "$(pwd)/${gcc_repo}" && cd "$(pwd)/${gcc_repo}"
     ./bin/${GCCType}-gcc -v 2>&1 | tee /tmp/gcc-version
@@ -36,12 +37,10 @@ if [[ ! -e $CURRENTMAINPATH/fail.info ]] && [[ -d ${GCCType} ]];then
     hash_head=$(cat /tmp/hash_head)
     commit_msg=$(cat /tmp/commit_msg)
     git add . -f
-    template=$(echo -e "
-    GCC version: $gccv
-    Binutils version: $ldv
-    GCC repo commit: $commit_msg
-    Link: https://github.com/gcc-mirror/gcc/commit/$hash_head
-    ")
+    template=$(echo -e "GCC version: $gccv
+Binutils version: $ldv
+GCC repo commit: $commit_msg
+Link: https://github.com/gcc-mirror/gcc/commit/$hash_head")
     git commit -m "greenforce: Bump to $(date '+%Y%m%d') build" -m "${template}" --signoff
     git push
 fi

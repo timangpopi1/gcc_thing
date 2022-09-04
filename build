@@ -34,7 +34,6 @@ function echo() {
     command echo -e "${@}"
 }
 
-
 # Help menu function
 function help_menu() {
     echo
@@ -62,7 +61,6 @@ function help_menu() {
     echo
 }
 
-
 # Prints a formatted header to let the user know what's being done
 function header() {
     [[ "${*}" =~ "--no-first-echo" ]] || echo
@@ -73,7 +71,6 @@ function header() {
     echo "====$(for i in $(seq ${#1}); do echo "=\c"; done)====${RST}"
     [[ "${*}" =~ "--no-second-echo" ]] || echo
 }
-
 
 # Prints an error in bold red
 function die() {
@@ -86,14 +83,12 @@ function die() {
     exit
 }
 
-
 # Prints a warning in bold yellow
 function warn() {
     echo ""
     echo "${YLW}${1}${RST}"
     [[ "${*}" =~ "-n" ]] && echo
 }
-
 
 # Formats the time for the end
 function format_time() {
@@ -129,7 +124,6 @@ function format_time() {
     echo "${TIME_STRING}"
 }
 
-
 # Check if user needs to enter sudo password or not
 function check_sudo() {
     echo
@@ -140,7 +134,6 @@ function check_sudo() {
     fi
 }
 
-
 # Unmount tmpfs
 function unmount_tmpfs() {
     if [[ -z ${NO_TMPFS} ]]; then
@@ -149,7 +142,6 @@ function unmount_tmpfs() {
         sudo umount -f build-binutils 2>/dev/null
     fi
 }
-
 
 # git clone wrapper
 function git_clone() {
@@ -160,7 +152,6 @@ function git_clone() {
     fi
 }
 
-
 # git fetch wrapper
 function git_fetch() {
     if [[ "${DEPTH_FLAG}" == "true" ]];then
@@ -169,7 +160,6 @@ function git_fetch() {
         git fetch ${@}
     fi
 }
-
 
 # Initial setup
 function setup_variables() {
@@ -181,15 +171,14 @@ function setup_variables() {
 
     # Configuration variables
     CONFIGURATION=( "--disable-multilib" "--disable-werror"
-                    "CFLAGS=-g0 -O3 -pipe -fstack-protector-strong -fuse-linker-plugin -ffunction-sections -fdata-sections"
-                    "CXXFLAGS=-g0 -O3 -pipe -fstack-protector-strong -fuse-linker-plugin -ffunction-sections -fdata-sections"
-                    "LDFLAGS=-O3")
+                    "CFLAGS=-flto -g0 -O3 -pipe -fstack-protector-strong -fuse-linker-plugin -ffunction-sections -fdata-sections"
+                    "CXXFLAGS=-flto -g0 -O3 -pipe -fstack-protector-strong -fuse-linker-plugin -ffunction-sections -fdata-sections")
 
     JOBS="-j$(($(nproc --all) + 2))"
     DEPTH_FLAG=true
 
     # Binary versions
-    BINUTILS_git="master"
+    BINUTILS_git="binutils-2_34-branch"
     BINUTILS_tar="2.38"
     GMP="gmp-6.2.1"
     MPFR="mpfr-4.1.0"
@@ -201,7 +190,6 @@ function setup_variables() {
     # Start of script
     START=$(date +%s)
 }
-
 
 # Parse parameters
 function parse_parameters() {
@@ -245,14 +233,6 @@ function parse_parameters() {
     "arm") ARCH_CLANG="ARM" ;;
     "arm64") ARCH_CLANG="AArch64" ;;
     "x86_64") ARCH_CLANG="x86-64" ;;
-    esac
-
-    LLVM_BRANCH="release/11.x"
-    case "${VERSION}" in
-    "10") LLVM_BRANCH="release/12.x" ;;
-    "11") LLVM_BRANCH="release/13.x" ;;
-    "12") LLVM_BRANCH="release/14.x" ;;
-    "13") LLVM_BRANCH="release/14.x" ;;
     esac
 
     case "${ARCH}" in
@@ -333,7 +313,6 @@ function parse_parameters() {
     fi
 }
 
-
 # Clean up from a previous compilation
 function clean_up() { #FIXME: we dont need to remove everything everytime.
     header "CLEANING UP"
@@ -355,7 +334,6 @@ function clean_up() { #FIXME: we dont need to remove everything everytime.
         echo "Clean up successful!"
     fi
 }
-
 
 function build_binaries() {
     ROOT=${PWD}
@@ -407,7 +385,6 @@ function build_binaries() {
         mv "${PXZ}"/pxz "${PREBUILTS_BIN}"
     fi
 }
-
 
 function download_sources() {
     cd sources || die "Failed to create sources directory!"
@@ -495,7 +472,6 @@ function download_sources() {
 
 }
 
-
 function extract() {
     UNPACK=""
     case "${1}" in
@@ -509,7 +485,6 @@ function extract() {
         tar -x "${1}" -C "${2}" --strip-components=1
     fi
 }
-
 
 # Extract tarballs to their proper locations
 function extract_sources() {
@@ -532,7 +507,6 @@ function extract_sources() {
         fi
     fi
 }
-
 
 # Update git repos
 function update_repos() {
@@ -570,7 +544,6 @@ function update_repos() {
     [[ ! -d binutils ]] && ln -s sources/binutils binutils
     [[ ! -d gcc ]] && ln -s sources/gcc gcc
 }
-
 
 # Setup source folders and build folders
 function setup_env() {
@@ -624,7 +597,6 @@ function setup_env() {
     fi
 }
 
-
 # Build binutils
 function build_binutils() {
     header "BUILDING BINUTILS"
@@ -639,7 +611,6 @@ function build_binutils() {
     make install "${JOBS}" || die "Error while installing binutils!" -n
 }
 
-
 # Make Linux kernel headers
 function build_headers() {
     header "MAKING LINUX HEADERS"
@@ -648,7 +619,6 @@ function build_headers() {
         INSTALL_HDR_PATH="${INSTALL}/${TARGET}" \
         headers_install "${JOBS}" || die "Error while building/installing Linux headers!" -n
 }
-
 
 # Build GCC
 function build_gcc() {
@@ -666,7 +636,6 @@ function build_gcc() {
         make install-target-libgcc "${JOBS}" || die "Error while installing libgcc for target!" -n
     fi
 }
-
 
 # Build glibc
 function build_glibc() {
@@ -697,7 +666,6 @@ function build_glibc() {
     fi
 }
 
-
 # Install GCC
 function install_gcc() {
     header "INSTALLING GCC"
@@ -705,24 +673,6 @@ function install_gcc() {
     make all "${JOBS}" || die "Error while compiling final toolchain!" -n
     make install "${JOBS}" || die "Error while installing final toolchain!" -n
     cd ..
-}
-
-# Make readme.md about GCC
-function add_readme() {
-    binutils_ver="$(cat ${ROOT}/sources/binutils/bfd/configure | awk -F "PACKAGE_VERSION=" '{print $2}' | sed -r 's/'"'"'//g' | tr -d "\n" )"
-    echo "# Quick Info ${TARGET}"> "${TARGET}/readme.md"
-    echo "  * BINUTILS version: ${binutils_ver}" >> "${TARGET}/readme.md"
-    echo "${binutils_ver}" >> "${TARGET}/../.BINUTILS.versionNya"
-    echo "  * GMP version: ${GMP}" >> "${TARGET}/readme.md"
-    echo "${GMP}" >> "${TARGET}/../.GMP.versionNya"
-    echo "  * MPFR version: ${MPFR}" >> "${TARGET}/readme.md"
-    echo "${MPFR}" >> "${TARGET}/../.MPFR.versionNya"
-    echo "  * MPC version: ${MPC}" >> "${TARGET}/readme.md"
-    echo "${MPC}" >> "${TARGET}/../.MPC.versionNya"
-    echo "  * ISL version: ${ISL}" >> "${TARGET}/readme.md"
-    echo "${ISL}" >> "${TARGET}/../.ISL.versionNya"
-    echo "  * GCLIB version: ${GLIBC}" >> "${TARGET}/readme.md"
-    echo "${GLIBC}" >> "${TARGET}/../.GCLIB.versionNya"
 }
 
 # Package toolchain
@@ -747,7 +697,6 @@ function package_tc() {
     fi
 }
 
-
 # Ending information
 function ending_info() {
     END=$(date +%s)
@@ -769,55 +718,6 @@ function ending_info() {
 
     # Alert to script end
     echo "\a"
-}
-
-function build_lld() {
-    # from https://github.com/mvaisakh/gcc-build/blob/next/build-lld.sh
-    header "Build LLD"
-    (
-        if [[ "${ARCH_CLANG}" == "AArch64" ]];then
-            ARCH_CLANGB="${ARCH_CLANG};ARM"
-        else
-            ARCH_CLANGB="${ARCH_CLANG}"
-        fi
-        cd ${ROOT}
-        git clone https://github.com/llvm/llvm-project -b ${LLVM_BRANCH} llvm --depth=1
-        export PATH="${INSTALL}/bin:${PATH}"
-        mkdir -p llvm/build
-        cd llvm/build
-        cmake -G "Ninja" \
-            -DLLVM_ENABLE_PROJECTS=lld \
-            -DCMAKE_CROSSCOMPILING=True \
-            -DCMAKE_INSTALL_PREFIX="${INSTALL}" \
-            -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGETCLG}" \
-            -DLLVM_TARGET_ARCH="${ARCH_CLANG}" \
-            -DLLVM_TARGETS_TO_BUILD="${ARCH_CLANGB}" \
-            -DCMAKE_CXX_COMPILER="$(which clang++)" \
-            -DCMAKE_C_COMPILER=$(which clang) \
-            -DLLVM_OPTIMIZED_TABLEGEN=True \
-            -DLLVM_USE_LINKER=lld \
-            -DLLVM_ENABLE_LTO=thin \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DLLVM_BUILD_RUNTIME=Off \
-            -DLLVM_INCLUDE_TESTS=Off \
-            -DLLVM_INCLUDE_EXAMPLES=Off \
-            -DLLVM_INCLUDE_BENCHMARKS=Off \
-            -DLLVM_ENABLE_MODULES=Off \
-            -DLLVM_ENABLE_BACKTRACES=Off \
-            -DLLVM_PARALLEL_COMPILE_JOBS=8 \
-            -DLLVM_PARALLEL_LINK_JOBS=4 \
-            -DBUILD_SHARED_LIBS=Off \
-            -DLLVM_INSTALL_TOOLCHAIN_ONLY=On \
-            -DCMAKE_C_FLAGS="-O3" \
-            -DCMAKE_CXX_FLAGS="-O3" \
-            -DLLVM_ENABLE_PIC=False \
-            ../llvm
-        ninja
-        ninja install || die "build llvm failed" -n
-        # Create proper symlinks
-        cd ${INSTALL}/bin
-        ln -s lld ${TARGET}-ld.lld
-    )
 }
 
 function ForStripping()
@@ -876,7 +776,6 @@ clean_up
 build_binaries
 download_sources
 extract_sources
-update_repos
 setup_env
 build_binutils
 build_headers
@@ -884,6 +783,5 @@ build_gcc
 build_glibc
 install_gcc
 ForStripping
-add_readme
 package_tc
 ending_info
