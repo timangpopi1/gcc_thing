@@ -9,6 +9,9 @@ task:
       cpu: 8
       memory: 32G
 
+  Setup-builder_script:
+      - bash setup.sh
+
   Deploy-builder_script:
-      - chmod +x do-now.sh
-      - bash do-now.sh "aarch64-linux-gnu" "13" "arm64"
+      - chmod +x run.sh
+      - bash run.sh "aarch64-linux-gnu" "13" "arm64"
