@@ -42,5 +42,5 @@ Binutils version: $ldv
 GCC repo commit: $commit_msg
 Link: https://github.com/gcc-mirror/gcc/commit/$hash_head")
     git commit -m "greenforce: Bump to $(date '+%Y%m%d') build" -m "${template}" --signoff
-    git push
+    git push -f
 fi
