@@ -14,4 +14,4 @@ task:
 
   Deploy-builder_script:
       - chmod +x run.sh
-      - bash run.sh "aarch64-linux-gnu" "13" "arm64"
+      - bash run.sh "arm-linux-gnueabi" "13" "arm32"
